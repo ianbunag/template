@@ -1,13 +1,51 @@
-# AGENTS.md
+# Template Repository
 
-My personal [`AGENTS.md`](AGENTS.md) configuration for AI coding agents.
+A starter template for creating new GitHub repositories pre-configured with agent instructions and automated pull request reviews.
 
-`AGENTS.md` is a vendor-neutral convention for giving coding agents their
-instructions. This repository stores my canonical configuration.
+## Included Files
 
-## Files
+- **[`AGENTS.md`](AGENTS.md)** — Canonical instructions and guidelines for AI coding agents.
+- **[`ANTIGRAVITY.md`](ANTIGRAVITY.md)** — Quick reference of commonly used Antigravity slash commands.
+- **[`CLAUDE.md`](CLAUDE.md)** — Points Claude Code to `AGENTS.md`.
+- **[`.github/workflows/jules-pr-review.yml`](.github/workflows/jules-pr-review.yml)** — Automated code review on pull request open and update events using Jules PR Reviewer.
 
-- **[`AGENTS.md`](AGENTS.md)** — the canonical instructions for coding agents.
-- **[`ANTIGRAVITY.md`](ANTIGRAVITY.md)** — quick reference of commonly used Antigravity slash commands, intended to be copied to JetBrains IDE scratch files for easy reference.
-- **[`CLAUDE.md`](CLAUDE.md)** — points Claude Code at `AGENTS.md`.
+## Repository Setup & Security Hardening
 
+After creating a new repository from this template, you must configure the following settings:
+
+### 1. Repository Secrets
+
+Navigate to **Settings > Security and quality> Secrets and variables > Actions > Repository secrets**:
+
+- Add `JULES_API_KEY` to enable automatic AI code reviews on pull requests.
+
+## Optional Security Hardening
+
+You can optionally configure the following settings:
+
+### 1. Actions Permissions
+
+Navigate to **Settings > Code, planning, and automation > Actions > General > Actions permissions**:
+
+- Select **Allow (organization), and select non-(organization), actions and reusable workflows**
+- Check **Allow actions created by GitHub**
+- Check **Allow actions by Marketplace verified creators**
+- Check **Require actions to be pinned to a full-length commit SHA**
+- Click Save
+
+### 2. Advanced Security
+
+Navigate to **Settings > Security and quality> Advanced Security**:
+
+#### Dependency Graph
+- Enable **Dependency graph**
+- Enable **Automatic dependency submission**
+
+#### Dependabot
+- Enable **Dependabot alerts**
+- Enable **Dependabot malware alerts**
+- Enable **Dependabot security updates**
+- Enable **Grouped security updates**
+
+#### Code Scanning
+- Set up **CodeQL analysis**
