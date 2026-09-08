@@ -20,7 +20,7 @@ jobs:
       - name: Parse subscriber list
         id: parse
         run: |
-          repos=$(grep -v '^\s*$\|^\s*#' subscribers.txt | jq -Rnc '[inputs | select(length > 0)]')
+          repos=$(jq -Rnc '[inputs | select(test("^\\s*($|#)") | not) | select(length > 0)]' subscribers.txt)
           echo "repos=${repos}" >> "$GITHUB_OUTPUT"
 
   sync:
@@ -74,7 +74,7 @@ jobs:
           git push --force-with-lease origin "${branch}"
 
           # Create a PR only if one doesn't already exist for this branch.
-          existing_pr=$(gh pr list --repo "${TARGET_REPO}" --head "${branch}" --json number --jq '.[0].number')
+          existing_pr=$(gh pr list --repo "${TARGET_REPO}" --head "${branch}" --json number --jq '.[0].number // empty')
           if [ -z "${existing_pr}" ]; then
             gh pr create \
               --repo "${TARGET_REPO}" \
