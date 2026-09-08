@@ -41,44 +41,47 @@ jobs:
       - name: Sync AGENTS.md and open PR
         env:
           GH_TOKEN: ${{ secrets.TARGET_REPO_PAT }}
+          TARGET_REPO: ${{ matrix.repo }}
+          SOURCE_REPO: ${{ github.repository }}
+          SOURCE_SHA: ${{ github.sha }}
         run: |
           git config user.name "Template Sync Bot"
           git config user.email "git.template@ianbunag.dev"
 
           branch="bot/update-agents-md"
-          default_branch=$(gh repo view "${{ matrix.repo }}" --json defaultBranchRef --jq '.defaultBranchRef.name')
+          default_branch=$(gh repo view "${TARGET_REPO}" --json defaultBranchRef --jq '.defaultBranchRef.name')
 
           # Fetch the remote branch if it exists; create from default otherwise.
           if git ls-remote --exit-code --heads origin "${branch}" > /dev/null 2>&1; then
             git fetch origin "${branch}"
-            git checkout "${branch}"
+            git checkout -b "${branch}" "origin/${branch}"
             git reset --hard "origin/${default_branch}"
           else
             git checkout -b "${branch}"
           fi
 
           curl -fsSL \
-            "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/AGENTS.md" \
+            "https://raw.githubusercontent.com/${SOURCE_REPO}/${SOURCE_SHA}/AGENTS.md" \
             -o AGENTS.md
 
-          if git diff --quiet; then
-            echo "AGENTS.md is already up to date in ${{ matrix.repo }}."
+          git add AGENTS.md
+
+          if git diff --staged --quiet; then
+            echo "AGENTS.md is already up to date in ${TARGET_REPO}."
             exit 0
           fi
-
-          git add AGENTS.md
           git commit -m "chore: sync AGENTS.md from template repository"
           git push --force-with-lease origin "${branch}"
 
           # Create a PR only if one doesn't already exist for this branch.
-          existing_pr=$(gh pr list --repo "${{ matrix.repo }}" --head "${branch}" --json number --jq '.[0].number')
+          existing_pr=$(gh pr list --repo "${TARGET_REPO}" --head "${branch}" --json number --jq '.[0].number')
           if [ -z "${existing_pr}" ]; then
             gh pr create \
-              --repo "${{ matrix.repo }}" \
+              --repo "${TARGET_REPO}" \
               --head "${branch}" \
               --base "${default_branch}" \
               --title "chore: sync AGENTS.md from template" \
-              --body "Automated PR — updates \`AGENTS.md\` to match the [template repository](https://github.com/${{ github.repository }})."
+              --body "Automated PR — updates \`AGENTS.md\` to match the [template repository](https://github.com/${SOURCE_REPO})."
           else
             echo "PR #${existing_pr} already open; branch updated."
           fi
