@@ -7,6 +7,7 @@ A starter template for creating new GitHub repositories pre-configured with agen
 - **[`AGENTS.md`](AGENTS.md)** — Canonical instructions and guidelines for AI coding agents.
 - **[`ANTIGRAVITY.md`](ANTIGRAVITY.md)** — Quick reference of commonly used Antigravity slash commands.
 - **[`CLAUDE.md`](CLAUDE.md)** — Points Claude Code to `AGENTS.md`.
+- **[`CUSTOM_AGENTS.md`](CUSTOM_AGENTS.md)** — Repository-specific agent instructions.
 - **[`.github/workflows/jules-pr-review.yml`](.github/workflows/jules-pr-review.yml)** — Automated code review on pull request open and update events using Jules PR Reviewer.
 
 ## Repository Setup & Security Hardening
