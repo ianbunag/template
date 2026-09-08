@@ -43,10 +43,3 @@ Every time you add a repository to `subscribers.txt`, you **must** also update t
 2. Click on the existing token.
 3. Under **Repository access**, add the newly subscribed repository.
 4. Click **Update token**.
-
-> [!CAUTION]
-> **Token Expiration** — GitHub limits fine-grained PATs to a **maximum lifetime of 1 year**. When the token expires, all sync runs will fail silently. Set a calendar reminder to rotate the token before it expires:
->
-> 1. Generate a new fine-grained token following the steps above.
-> 2. Update the `TARGET_REPO_PAT` secret in the template repository with the new value.
-> 3. Revoke the old token.
