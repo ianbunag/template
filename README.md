@@ -13,7 +13,19 @@ A starter template for creating new GitHub repositories pre-configured with agen
 
 After creating a new repository from this template, you must configure the following settings:
 
-### 1. Repository Secrets
+### 1. Remove Dormant Workflow and Subscribe to Updates
+
+The template includes a `sync-agents.yml` workflow that only runs in the template repository itself. Delete it from your new repository:
+
+```bash
+git rm .github/workflows/sync-agents.yml
+git commit -m "chore: remove dormant sync-agents workflow"
+git push
+```
+
+To receive future `AGENTS.md` updates as automated PRs, add your repository to [`subscribers.txt`](https://github.com/ianbunag/template/blob/main/subscribers.txt) in the template repository (see the [workflows README](.github/workflows/README.md) for details).
+
+### 2. Repository Secrets
 
 Navigate to **Settings > Security and quality> Secrets and variables > Actions > Repository secrets**:
 
