@@ -1,0 +1,6 @@
+# Repositories to receive AGENTS.md updates (owner/repo, one per line).
+ianbunag/terraform-sjsu
+ianbunag/cmpe-283-virtual-technologies
+ianbunag/cmpe-279-software-security-technologies
+ianbunag/cloud-lab
+ianbunag/ianbunag.github.io

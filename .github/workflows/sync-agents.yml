@@ -1,0 +1,87 @@
+name: Sync AGENTS.md to Subscribers
+
+on:
+  push:
+    branches: [main]
+    paths: [AGENTS.md]
+
+jobs:
+  prepare:
+    if: github.repository == 'ianbunag/template'
+    runs-on: ubuntu-latest
+    outputs:
+      repos: ${{ steps.parse.outputs.repos }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout@v7
+        with:
+          sparse-checkout: subscribers.txt
+          sparse-checkout-cone-mode: false
+
+      - name: Parse subscriber list
+        id: parse
+        run: |
+          repos=$(jq -Rnc '[inputs | select(test("^\\s*($|#)") | not) | select(length > 0)]' subscribers.txt)
+          echo "repos=${repos}" >> "$GITHUB_OUTPUT"
+
+  sync:
+    needs: prepare
+    if: needs.prepare.outputs.repos != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        repo: ${{ fromJson(needs.prepare.outputs.repos) }}
+    steps:
+      - name: Check out target repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout@v7
+        with:
+          repository: ${{ matrix.repo }}
+          token: ${{ secrets.TARGET_REPO_PAT }}
+
+      - name: Sync AGENTS.md and open PR
+        env:
+          GH_TOKEN: ${{ secrets.TARGET_REPO_PAT }}
+          TARGET_REPO: ${{ matrix.repo }}
+          SOURCE_REPO: ${{ github.repository }}
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          git config user.name "Template Sync Bot"
+          git config user.email "git.template@ianbunag.dev"
+
+          branch="bot/update-agents-md"
+          default_branch=$(gh repo view "${TARGET_REPO}" --json defaultBranchRef --jq '.defaultBranchRef.name')
+
+          # Fetch the remote branch if it exists; create from default otherwise.
+          if git ls-remote --exit-code --heads origin "${branch}" > /dev/null 2>&1; then
+            git fetch origin "${branch}"
+            git checkout -b "${branch}" "origin/${branch}"
+            git reset --hard "origin/${default_branch}"
+          else
+            git checkout -b "${branch}"
+          fi
+
+          curl -fsSL \
+            "https://raw.githubusercontent.com/${SOURCE_REPO}/${SOURCE_SHA}/AGENTS.md" \
+            -o AGENTS.md
+
+          git add AGENTS.md
+
+          if git diff --staged --quiet; then
+            echo "AGENTS.md is already up to date in ${TARGET_REPO}."
+            exit 0
+          fi
+          git commit -m "chore: sync AGENTS.md from template repository"
+          git push --force-with-lease origin "${branch}"
+
+          # Create a PR only if one doesn't already exist for this branch.
+          existing_pr=$(gh pr list --repo "${TARGET_REPO}" --head "${branch}" --json number --jq '.[0].number // empty')
+          if [ -z "${existing_pr}" ]; then
+            gh pr create \
+              --repo "${TARGET_REPO}" \
+              --head "${branch}" \
+              --base "${default_branch}" \
+              --title "chore: sync AGENTS.md from template" \
+              --body "Automated PR — updates \`AGENTS.md\` to match the [template repository](https://github.com/${SOURCE_REPO})."
+          else
+            echo "PR #${existing_pr} already open; branch updated."
+          fi
